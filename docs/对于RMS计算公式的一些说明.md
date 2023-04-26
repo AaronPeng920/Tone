@@ -124,3 +124,7 @@ print(rms)
 
 
 
+![image-20230424193047631](/Users/aaronpeng/Library/Application Support/typora-user-images/image-20230424193047631.png)
+
+![image-20230424193842745](/Users/aaronpeng/Library/Application Support/typora-user-images/image-20230424193842745.png)
+

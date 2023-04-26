@@ -45,7 +45,7 @@ def glissando(y, reference, sr=22050, frame_length=2048, hop_length=512):
 
     audio = spectrum2wav(target_spectrums, n_fft=frame_length)
 
-    return audio
+    return audio,shift_reference, shift
 
 
 
