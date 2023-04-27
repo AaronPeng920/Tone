@@ -7,6 +7,7 @@ import gradio as gr
 from features.spectrum import save_spectrum_figure, spectrum
 from features.fundfreq import fundfreq
 from utils import hz_to_fft, spectrum2wav
+from amplitude_patch import amplitude_patch
 
 # 蒙版过滤
 def mask_fliter(arr, mask, pad_value=0):
@@ -32,7 +33,7 @@ def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
         fundfreqs: 基频, shape:(n_fft//2+1, 帧数量)
         overtone_group: list(int), 要保留的基频和泛音级别
         -------------------------------
-        return: 保留指定的基频和泛音后的频谱图
+        return: 保留指定的基频和泛音后的 db 频谱图
     """
     fft_total = S_db.shape[0]
     frame_count = S_db.shape[1]
@@ -62,11 +63,12 @@ def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
     
 # 保留原音频的基频泛音组合
 def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
-            l11, l12, l13, l14, l15, l16, l17, l18, l19, sr=44100):
+            l11, l12, l13, l14, l15, l16, l17, l18, l19, sr=44100, patch=False):
     """参数
         filename: gradio 接收的文件名
         lx: bool, 是否保持第 x 泛音
         sr: 采样率
+        patch: 是否进行振幅补丁
         ------------------------------
         return: (原音频的频谱图路径, 原音频文件路径, 生成音频的频谱图路径, 生成音频文件路径)
     """
@@ -91,6 +93,14 @@ def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
     target_spectrum_db = fundfreq_overtone_group(origin_spectrum_db, f0, overtone_group)
     target_audio = spectrum2wav(target_spectrum_db, origin_spectrum_p)
 
+    # 进行幅度谱补丁修正 RMS
+    if patch:
+        target_spectrum_complex = spectrum(target_audio)        # 目标音频的复数频谱图
+        amp_patch = amplitude_patch(target_spectrum_complex, origin_spectrum)  # 补丁
+        res_spectrum_complex = target_spectrum_complex + amp_patch  # 最终的复数元素频谱图
+        res_spectrum_db = librosa.amplitude_to_db(np.abs(res_spectrum_complex))
+        target_audio = spectrum2wav(res_spectrum_db, origin_spectrum_p)
+    
     target_spectrum_path = 'gradio_temp/overtone_target_spectrum.jpg'
     target_spectrum_path = save_spectrum_figure(target_audio, sr=sr, save_filename=target_spectrum_path)
     target_audio_path = 'gradio_temp/overtone_target_audio.wav'

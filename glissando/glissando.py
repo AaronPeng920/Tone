@@ -15,7 +15,7 @@ def glissando(y, reference, sr=22050, frame_length=2048, hop_length=512):
         hop_length: 帧跳数
         fluctuation: 波动函数
         ---------------------------
-        return: 颤音化处理后的音频信号
+        return: 颤音化处理后的音频信号, 参考音频的波动值, 从参考音频的波动值采样的波动值
     """
     audio_frames = frame(y, frame_length=frame_length, hop_length=hop_length)
     n = audio_frames.shape[0]           # 当前音频的帧数量
