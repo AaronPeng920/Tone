@@ -24,7 +24,7 @@ stft = librosa.stft(y)
 stft_stretch = librosa.phase_vocoder(stft, rate=rate)
 ```
 
-> 在相位声码器内部是这么进行工作的，给定一个 STFT 矩阵 `D`，其中 `D.shape=[n_fft//2+1, 帧数量]`，通过因子 `rate` 进行加速，如果 `rate > 1` 表示加速，如果 `rate < 1` 表示减速。
+> **相位声码器可以直接完成变速不变调的功能，如果想要完成变调不变速的功能，可以直接和重采样结合起来。**在相位声码器内部是这么进行工作的，给定一个 STFT 矩阵 `D`，其中 `D.shape=[n_fft//2+1, 帧数量]`，通过因子 `rate` 进行加速，如果 `rate > 1` 表示加速，如果 `rate < 1` 表示减速。
 >
 > ```python
 > phase_vocoder(D, *, rate, hop_length=None, n_fft=None):
@@ -56,13 +56,17 @@ stft_stretch = librosa.phase_vocoder(stft, rate=rate)
 >
 > 5. 对 `D` 的最后一个维度的高索引处(即帧数量的维度)填充 2 列 0，以简化边界逻辑
 >
-> 6. 对每个时间步进行迭代，迭代的当前时间步是 `step`
+> 6. 对每个时间步 `time_steps` 进行迭代，迭代的当前时间步是 `step`
 >
-> > * 获取 `D` 的 `int(step):int(step+2)` 的两帧
-> > * 计算当前时间步 `step` 的小数部分  `alpha=np.mod(step, 1.0)` 
+> > * 获取 `D` 的 `int(step):int(step+2)` 的两帧 `columns = D[..., int(step):int(step+2)]`
+> > * 计算当前时间步 `step` 的小数部分  `alpha = np.mod(step, 1.0)` 
 > >
-> > 
+> > * 计算 `mag = (1.0 - alpha) * np.abs(columns[..., 1]) - alpha * np.abs(columns[..., 0]) - phi_advance `
+> > * 存储输出的数组 `d_stretch[..., t] = mag * np.exp(1.0j * phase_acc)`
+> >
+> > * 计算相位前移 `dphase = np.angle(columns[..., 1]) - np.angle(columns[..., 0]) - phi_advance`
+> > * 包裹到 `-pi:pi` 的范围 `dphase = dphase - 2.0 * np.pi * np.round(dphase / (2.0 * np.pi))`
+> > * 累加相位 `phase_acc += phi_advance + dphase`
 >
-> 
->
-> 
+> 7. 返回 `d_stretch`
+
