@@ -23,153 +23,78 @@ def sine(A, w, b, n, start=0, end=-1):
     y = A * np.sin(w * x + b)
     return x, y
 
-
-# 三角波
-def triangle(k, T, n, start=0, end=-1):
+# 生成不规律的频率在 [low, high] 均匀分布的正弦波
+def uniform_sine(A, low, high, n):
     """参数
-        k: 三角波第一段线的斜率
-        T: 三角波的周期
-        n: 采样点的个数
-        start: 开始采样的位置
-        end: 结束采样的位置
-        -----------------------
-        return: (采样点x值, 采样点y值), shape:(2,n)
-    """
-    # 三角波的函数
-    def f(k, T, x):
-        """参数
-            k: 三角波第一段线的斜率
-            T: 三角波的周期
-            x: 横坐标值
-        """
-        half_T = T / 2.0     
-        half_T_i = np.floor(x / half_T)   # 第几个半个周期
-        # 偶数个半个周期表明函数是: y = k * x
-        if half_T_i % 2 == 0:
-            y = k * (x - half_T_i * half_T)
-        # 奇数个半个周期表明函数是: y = -k * x + k * T/2
-        else:
-            y = -1 * k * (x - half_T_i * half_T) + k * half_T
-        return y
-    
-    # 确定采样间隔
-    if end == -1 or end <= start:
-        step = 1
-    else:
-        step = (end - start) / (n - 1)
-
-    x = np.array([start + i * step for i in range(n)])     # 采样点的横坐标值
-    y = np.array([f(k, T, t) for t in x])
-
-    return x, y
-
-# 方波
-
-
-
-
-# 锯齿形
-
-
-
-# 反锯齿形
-
-
-# 多项式
-def polynomial(h_power, coefficients, n, start=0, end=-1):
-    """参数
-        h_power: 最高次幂
-        coefficients: 系数, list, shape:(h_power+1, )
-        n: 采样的个数
-        start: 开始采样的位置
-        end: 结束采样的位置
+        A: 不规律正弦波的系数
+        low: 频率下限
+        high: 频率上限
+        n: 采样点个数
         ---------------------------------
         return: (采样点x值, 采样点y值), shape:(2,n)
     """
-    # 多项式函数定义
-    def f(h_power, coefficients, x):
-        """参数
-            h_power: 最高次幂, int
-            coefficients: 系数, 1-D np.array 或者 list, shape:(h_power+1, )
-            x: 横坐标的值
-            ----------------------------------------------
-            return: 多项式函数值
-        """
-        assert len(coefficients) == h_power + 1
+    t = np.linspace(0, 2*np.pi, n)
+    f = np.random.uniform(low, high, len(t))
+    x = A * np.sin(2*np.pi*f*t)
 
-        y = 0
-        for i in range(h_power):
-            y += coefficients[-1 * (i+1)] * x ** i
-        return y
+    return t, x
 
-    # 确定采样间隔
-    if end == -1 or end <= start:
-        step = 1
-    else:
-        step = (end - start) / (n - 1)
+# 生成不规律的频率在均值为 mean, 方差为 square 的正态分布的正弦波
+def gause_sine(A, mean, square, n):
+    """参数
+        A: 不规律的正弦波的系数
+        mean: 频率均值
+        square: 频率方差
+        n: 采样点个数
+        --------------------------------
+        return: (采样点x值, 采样点y值), shape:(2,n)
+    """
+    t = np.linspace(0, 2*np.pi, n)
+    f = np.random.normal(mean, square, len(t))
+    # 使用一个长度为 32 的均值滤波器对频率序列进行平滑处理, 从而让频率的变化更加缓慢
+    f_smooth = np.convolve(f, np.ones(32)/32, mode='same')
+    # 生成正弦波
+    x = A * np.sin(2*np.pi*f_smooth*t)
+    
+    return t, x
 
-    x = np.array([start + i * step for i in range(n)])     # 采样点的横坐标值
-    y = np.array([f(h_power, coefficients, t) for t in x])
+# 生成频率逐渐增大的正弦波
+def increase_f_sine(p, n):
+    """参数
+        p: 波动程度 1-10
+        n: 采样点的个数
+        -----------------------
+        return: (采样点x值, 采样点y值), shape:(2,n)
+    """
+    # 生成含有n个采样点的信号
+    x = np.linspace(0, 10, n)
+
+    # 生成周期变化的信号
+    periods = 5 * np.exp(-(p/10) * x)  # 周期变化的数组
+    frequencies = 2 * np.pi / periods  # 频率根据周期计算
+
+    y = np.sin(frequencies * x)
+    return x, y
+
+# 生成频率逐渐降低的正弦波
+def decrease_f_sine(p, n):
+    """参数
+        p: 波动程度 1-10
+        n: 采样点的个数
+        -------------------------
+        return: (采样点x值, 采样点y值), shape:(2,n)
+    """
+    # 生成含有n个采样点的信号
+    x = np.linspace(0, 10, n)
+
+    # 生成频率逐渐降低的正弦波信号
+    frequencies = p * np.exp(-0.1 * x)  # 频率逐渐降低的数组
+    y = np.sin(2 * np.pi * frequencies * x)
 
     return x, y
 
-# 波动函数父类
-class Fluct:
-    def __init__(self, fluctuation):
-        """参数
-            fluctuation: 波动函数, python 函数, 定义为 f(x)
-        """
-        self.fluctuation = fluctuation
-
-    # 计算波动值
-    def forward(self, x):
-        return self.fluctuation(x)
-
-    # 采样
-    def sample(self, n, start=0, end=-1):
-        """参数
-            n: 采样点的个数
-            start: 开始采样的位置
-            end: 结束采样的位置
-            ----------------------------
-            return: (采样点x轴值, 采样点y轴值), shape:(2, n)
-        """
-        # 确定采样间隔
-        if end == -1 or end <= start:
-            step = 1
-        else:
-            step = (end - start) / (n - 1)
-
-        x_samples = np.array([start + i * step for i in range(n)])     # 采样点的横坐标值
-        y_samples = np.array([self.forward(t) for t in x])
-
-        return x_samples, y_samples
-
-    # 展示波动函数的形状
-    def plot(self, save=False, save_filename=None):
-        """参数
-            save: 是否进行保存, 否则直接显示
-            save_filename: 保存的路径
-        """
-        x = np.arange(-50, 50, 0.1) 
-        y = np.array([self.forward(t) for t in x])
-
-        plt.plot(x, y)
-        # 进行保存
-        if save:
-            if os.path.exists(save_filename):
-                plt.savefig(save_filename, dpi=600)
-            else:
-                raise FileNotFoundError('not found file {} to save the fig'.format(save_filename))
-        # 进行显示
-        else:
-            plt.show()
-    
-
-
 if __name__ == '__main__':
-    def f(x):
-        return 0.2*np.sin(x) + 0.2*np.sin(2*x) + 0.2*np.sin(3*x) + 0.2*np.sin(4*x) + 0.2*np.sin(5*x)
+    _, fluct = decrease_f_sine(1, 100)
+    plt.plot(fluct)
+    plt.show()
 
-    fluct = Fluct(f)
-    fluct.plot()

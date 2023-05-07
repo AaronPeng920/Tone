@@ -26,6 +26,31 @@ def mask_fliter(arr, mask, pad_value=0):
 
     return arr
 
+# 对基频的 NAN 进行处理
+def fundfreq_process(fundfreqs):
+    """参数
+        fundfreqs: 基频
+        --------------------
+        return: 处理后的基频
+    """
+    count = fundfreqs.shape[0]
+    first_idx = -1
+    for i in range(count):
+        if not np.isnan(fundfreqs[i]):
+            first_idx = i
+            break
+    
+    if first_idx == -1:
+        raise RuntimeError('all nan in fundfreqs')
+    else:
+        for i in range(first_idx):
+            fundfreqs[i] = fundfreqs[first_idx]
+        for i in range(first_idx, count):
+            if np.isnan(fundfreqs[i]):
+                fundfreqs[i] = fundfreqs[i-1]
+
+    return fundfreqs
+
 # 保留基频泛音组合
 def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
     """参数
@@ -39,6 +64,7 @@ def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
     frame_count = S_db.shape[1]
 
     mask = []    
+
     # 逐帧进行判定, 形成蒙版 mask
     for f in fundfreqs:
         if np.isnan(f):
@@ -63,12 +89,13 @@ def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
     
 # 保留原音频的基频泛音组合
 def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
-            l11, l12, l13, l14, l15, l16, l17, l18, l19, sr=44100, patch=False):
+            l11, l12, l13, l14, l15, l16, l17, l18, l19, sr=44100, patch=False, fundfreq_process=False):
     """参数
         filename: gradio 接收的文件名
         lx: bool, 是否保持第 x 泛音
         sr: 采样率
         patch: 是否进行振幅补丁
+        fundfreq_process: 是否对基频进行预先处理使得其不含有 nan
         ------------------------------
         return: (原音频的频谱图路径, 原音频文件路径, 生成音频的频谱图路径, 生成音频文件路径)
     """
@@ -89,6 +116,8 @@ def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
     
 
     f0, _, _ = fundfreq(audio_data, sr=sr)
+    if fundfreq_process:
+        f0 = fundfreq_process(f0)
 
     target_spectrum_db = fundfreq_overtone_group(origin_spectrum_db, f0, overtone_group)
     target_audio = spectrum2wav(target_spectrum_db, origin_spectrum_p)

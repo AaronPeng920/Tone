@@ -20,6 +20,7 @@ def gause_noise(mean=0.0, square=1.0, size=10, min=np.finfo(np.float32).min, max
 
 
 
+
 if __name__ == '__main__':
     _, fluct = sine(1, 1, 0, 93, 0, 10 * 2 * np.pi)
     noise = gause_noise(0, 0.25, 93, -0.5, 0.5)

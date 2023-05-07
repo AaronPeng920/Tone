@@ -90,6 +90,41 @@ def pitch_shift_steps(fundfreqs, bins_per_octave=12):
     
     return shift
 
+# 计算音高相对于第一个非 nan 音符的 fft 频率段数量
+def pitch_shift_fft_steps(fundfreqs, n_fft=2048, sr=22050):
+    """参数
+        fundfreqs: 要计算 shift 的 fft 频率段的数量
+        n_fft: 计算基频时候的 n_fft
+        sr: 采样率
+        -----------------------------------------
+        return: 相对于第一个非 nan 基频的音高调整 steps
+    """
+    fft_i = [int(hz*n_fft/sr) if not np.isnan(hz) else np.nan for hz in fundfreqs] 
+
+    first_notnan_idx = -1
+    shift = []
+
+    # 寻找第一个非 nan 的音符
+    for idx, i in enumerate(fft_i):
+        if not np.isnan(i):
+            first_notnan_idx = idx
+            break
+    if first_notnan_idx == -1:
+        raise ValueError("This fundfreq has no f0 which is not nan")
+
+    for idx, i in enumerate(fft_i):
+        if idx <= first_notnan_idx:
+            shift.append(0)
+        else:
+            if np.isnan(i):
+                shift.append(shift[-1])
+            else:
+                shift.append(i - fft_i[first_notnan_idx])
+
+    shift = np.array(shift)
+
+    return shift
+
 # 分帧
 def frame(y, frame_length=2048, hop_length=512):
     """参数
@@ -116,10 +151,11 @@ def shift_sampling(shift, n):
     return res
 
 # 频谱图转音频
-def spectrum2wav(S, n_fft=2048):
+def spectrum2wav(S, n_fft=2048, center=False):
     """参数
         S: 复数元素的频谱图
         n_fft: 进行 STFT 时候使用的 n_fft
+        center: 是否进行居中
         ---------------------------------
         return: 频谱图对应的音频
     """
@@ -127,8 +163,10 @@ def spectrum2wav(S, n_fft=2048):
     p = 2 * np.pi * np.random.random_sample(a.shape) - np.pi   # 随机相位
     for i in range(50):
         S = a * np.exp(1j * p)
-        x = librosa.istft(S, center=False)
-        p = np.angle(librosa.stft(x, n_fft = n_fft, center=False))
+        x = librosa.istft(S, center=center)
+        p = np.angle(librosa.stft(x, n_fft = n_fft, center=center))
 
     return x
+
+# 曲线拟合
 

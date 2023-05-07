@@ -1,5 +1,6 @@
 import librosa
 import numpy as np
+import uuid
 
 # 频谱图转音频
 def spectrum2wav(S_db, p=None, n_fft=2048):
@@ -37,3 +38,14 @@ def hz_to_fft(hz, n_fft=2048, sr=44100):
     """
     idx = int((hz * n_fft) / sr)
     return idx
+
+# 生成指定后缀的随机文件名
+def random_uuid_suffix(suffix):
+    """参数
+        suffix: str, 不含 . 的扩展名, 如 '.wav' 音频可以设置为 'wav'
+        --------------------------
+        return: 指定扩展名的不重复随机文件名
+    """
+    random_uuid = uuid.uuid4().hex
+    res = random_uuid + '.' + suffix
+    return res
