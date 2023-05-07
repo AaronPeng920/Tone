@@ -6,8 +6,8 @@ sys.path.append('..')
 import gradio as gr
 from features.spectrum import save_spectrum_figure, spectrum
 from features.fundfreq import fundfreq
-from utils import hz_to_fft, spectrum2wav
-from amplitude_patch import amplitude_patch
+from .utils import hz_to_fft, spectrum2wav
+from .amplitude_patch import amplitude_patch
 
 # 蒙版过滤
 def mask_fliter(arr, mask, pad_value=0):
@@ -139,7 +139,7 @@ def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
 
 # 泛音类
 class Overtone:
-    def __init__(self, func):
+    def __init__(self, func=overtone):
         """参数
             func: 槽函数
         """

@@ -59,8 +59,9 @@ def gause_sine(A, mean, square, n):
     return t, x
 
 # 生成频率逐渐增大的正弦波
-def increase_f_sine(p, n):
+def increase_f_sine(A, p, n):
     """参数
+        A: 振幅
         p: 波动程度 1-10
         n: 采样点的个数
         -----------------------
@@ -73,12 +74,13 @@ def increase_f_sine(p, n):
     periods = 5 * np.exp(-(p/10) * x)  # 周期变化的数组
     frequencies = 2 * np.pi / periods  # 频率根据周期计算
 
-    y = np.sin(frequencies * x)
+    y = A * np.sin(frequencies * x)
     return x, y
 
 # 生成频率逐渐降低的正弦波
-def decrease_f_sine(p, n):
+def decrease_f_sine(A, p, n):
     """参数
+        A: 振幅
         p: 波动程度 1-10
         n: 采样点的个数
         -------------------------
@@ -89,12 +91,12 @@ def decrease_f_sine(p, n):
 
     # 生成频率逐渐降低的正弦波信号
     frequencies = p * np.exp(-0.1 * x)  # 频率逐渐降低的数组
-    y = np.sin(2 * np.pi * frequencies * x)
+    y = A * np.sin(2 * np.pi * frequencies * x)
 
     return x, y
 
 if __name__ == '__main__':
-    _, fluct = decrease_f_sine(1, 100)
+    _, fluct = decrease_f_sine(1, 1, 100)
     plt.plot(fluct)
     plt.show()
 

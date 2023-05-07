@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 import gradio as gr
 import sys
-from utils import spectrum2wav, hz_to_fft
+from .utils import spectrum2wav, hz_to_fft
 sys.path.append('..')
 from features.spectrum import save_spectrum_figure, spectrum
 import soundfile as sf
@@ -85,7 +85,7 @@ def equalizer(filename, freq_band_32, freq_band_64, freq_band_125, freq_band_250
 
 # 均衡器类
 class Equalizer:
-    def __init__(self, func):
+    def __init__(self, func=equalizer):
         """参数
             func: 槽函数
         """
@@ -94,16 +94,18 @@ class Equalizer:
         with gr.Blocks() as self.demo:
             self.input_file = gr.File(label='音频文件')
             with gr.Blocks():
-                self.slider_32 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='32')
-                self.slider_64 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='64')
-                self.slider_125 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='125')
-                self.slider_250 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='250')
-                self.slider_500 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='500')
-                self.slider_1k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='1k')
-                self.slider_2k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='2k')
-                self.slider_4k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='4k')
-                self.slider_8k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='8k')
-                self.slider_16k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='16k')
+                with gr.Row():
+                    self.slider_32 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='0-32(Hz)')
+                    self.slider_64 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='32-64(Hz)')
+                    self.slider_125 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='64-125(Hz)')
+                    self.slider_250 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='125-250(Hz)')
+                    self.slider_500 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='250-500(Hz)')
+                with gr.Row():
+                    self.slider_1k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='500-1k(Hz)')
+                    self.slider_2k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='1k-2k(Hz)')
+                    self.slider_4k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='2k-4k(Hz)')
+                    self.slider_8k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='4k-8k(Hz)')
+                    self.slider_16k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='8k-16k(Hz)')
 
             self.btn = gr.Button(value='计算')
 
@@ -128,7 +130,7 @@ class Equalizer:
 
 
 if __name__ == '__main__':
-    demo = Equalizer(equalizer)
+    demo = Equalizer()
     demo.launch()
 
 

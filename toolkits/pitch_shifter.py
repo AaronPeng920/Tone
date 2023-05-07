@@ -7,8 +7,8 @@ sys.path.append('..')
 from features.fundfreq import fundfreq, save_fundfreq_figure
 from features.spectrum import spectrum
 import gradio as gr
-from utils import spectrum2wav
-from amplitude_patch import amplitude_patch
+from .utils import spectrum2wav
+from .amplitude_patch import amplitude_patch
 
 # librosa 实现的音高调整的槽函数
 def pitch_shifter_librosa(filename, n_steps=0, bins_per_octave=12, sr=44100):
@@ -108,7 +108,12 @@ def pitch_shift(filename, func, n_steps=0, bins_per_octave=12, sr=44100):
 
 # 音高调整器类
 class PitchShifter:
-    def __init__(self):
+    def __init__(self, func=pitch_shift):
+        """参数
+            func: 槽函数
+        """
+        self.func = func
+
         with gr.Blocks() as self.demo:
             with gr.Blocks():
                 with gr.Row():
@@ -132,7 +137,7 @@ class PitchShifter:
                             self.target_audio = gr.Audio(label='生成音频')
             
             
-            self.btn.click(pitch_shift, 
+            self.btn.click(self.func, 
                             inputs=[self.input_file, self.functype, self.n_steps, self.bins_per_octave, self.sr], 
                             outputs=[self.origin_fundfreq, self.origin_audio, self.target_fundfreq, self.target_audio])
             

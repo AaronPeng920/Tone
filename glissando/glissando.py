@@ -1,12 +1,13 @@
 import librosa
 import numpy as np
+import soundfile as sf
 from .utils import pitch_shift_steps, frame, shift_sampling, spectrum2wav, pitch_shift_fft_steps
 import sys
 sys.path.append('..')
-from features.fundfreq import fundfreq
+from features.fundfreq import fundfreq, save_fundfreq_figure
 
 # 使用音频信号在时域上进行音高调整
-def glissando(y, reference, sr=22050, frame_length=2048, hop_length=512):
+def glissando_audio(y, reference, sr=22050, frame_length=2048, hop_length=512):
     """参数
         y: 音频信号
         reference: 参考的滑音片段, 由 librosa 读取得到
@@ -31,7 +32,7 @@ def glissando(y, reference, sr=22050, frame_length=2048, hop_length=512):
 
     # 平滑处理
     window_size = 5
-        # 计算加权平均数
+    # 计算加权平均数
     weights = np.repeat(1.0, window_size) / window_size
     shift = np.convolve(shift, weights, 'same')
 
@@ -51,7 +52,7 @@ def glissando(y, reference, sr=22050, frame_length=2048, hop_length=512):
 
     audio = spectrum2wav(target_spectrums, n_fft=frame_length)
 
-    return audio,shift_reference, shift
+    return audio, shift_reference, shift
 
 # 使用频谱图在频域上进行音高调整
 def glissando_spectrum(y, reference, sr=22050, frame_length=2048, hop_length=512):
@@ -79,7 +80,7 @@ def glissando_spectrum(y, reference, sr=22050, frame_length=2048, hop_length=512
     shift = shift_sampling(shift_reference_cliped, n)  # 实际的 shift 值
     # 平滑处理
     window_size = 5
-        # 计算加权平均数
+    # 计算加权平均数
     weights = np.repeat(1.0, window_size) / window_size
     shift = np.convolve(shift, weights, 'same')
 
@@ -101,6 +102,56 @@ def glissando_spectrum(y, reference, sr=22050, frame_length=2048, hop_length=512
     return target_data, shift_reference_cliped, shift
 
 
+##################### 以下是用于 gradio 的 API ####################
+def glissando_api(process_filename, reference_filename, type='时域', sr=44100, frame_length=2048, hop_length=512, use_gradio=True):
+    """参数
+        process_filename: 要处理的音频文件名
+        reference_filename: 参考的滑音的音频文件名
+        type: 处理的类型, `时域` or `频域`
+        sr: 采样率
+        frame_length: 帧长度
+        hop_length: 帧移
+        use_gradio: 上述传递的文件名是否是 gradio 的接收的
+        ------------------------------------
+        return: 原音频基频图, 原音频, 参考音频基频图, 参考音频, 生成音频基频图, 生成音频
+    """
+
+    if use_gradio:
+        process_filename = process_filename.name
+        reference_filename = reference_filename.name
+        
+    
+    process_data, sr = librosa.load(process_filename, sr=sr)
+    reference_data, sr = librosa.load(reference_filename, sr=sr)
+
+    if type == '时域':
+        result_audio, shift_ref, shift = glissando_audio(process_data, reference_data, sr=sr, frame_length=frame_length, hop_length=hop_length)
+    elif type == '频域':
+        result_audio, shift_ref, shift = glissando_spectrum(process_data, reference_data, sr=sr, frame_length=frame_length, hop_length=hop_length)
+    else:
+        raise NotImplementedError('unknown process type of `{}`'.format(type))
+
+    result_audio_path = 'gradio_temp/glissando_result_audio.wav'
+    sf.write(result_audio_path, result_audio, sr)
+
+    origin_fundfreq_path = 'gradio_temp/glissando_origin_fundfreq.png'
+    save_fundfreq_figure(process_data, save_filename=origin_fundfreq_path)
+
+    reference_fundfreq_path = 'gradio_temp/glissando_reference_fundfreq.png'
+    save_fundfreq_figure(reference_data, save_filename=reference_fundfreq_path)
+
+    result_fundfreq_path = 'gradio_temp/glissando_result_fundfreq.png'
+    result_data, sr = librosa.load(result_audio_path, sr=sr)
+    save_fundfreq_figure(result_data, save_filename=result_fundfreq_path)
+
+    return origin_fundfreq_path, process_filename, reference_fundfreq_path, reference_filename, result_fundfreq_path, result_audio_path
+
+
+    
+
+
+
+    
 
 
 
