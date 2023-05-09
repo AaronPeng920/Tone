@@ -57,7 +57,7 @@ def spectrum_envelope(filename1, filename2, frame_idx, sr=44100):
     return path1, path2
 
 
-# 音高调整器类
+# 频谱包络
 class SpectrumEnvelope:
     def __init__(self, func):
         """参数

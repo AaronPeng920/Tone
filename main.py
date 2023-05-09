@@ -84,7 +84,7 @@ class VibratoDemo:
         with gr.Blocks() as self.decrease_sin_ui:
             with gr.Row():
                 self.decrease_sin_ui_A = gr.Number(value=1, label='A(正弦波振幅)')
-                self.decrease_sin_ui_p = gr.Slider(minimum=1, maximum=10, value=1, step=0.1, label='频率降低速率')
+                self.decrease_sin_ui_p = gr.Slider(minimum=1, maximum=10, value=2, step=0.1, label='频率降低速率')
             self.decrease_sin_ui_btn = gr.Button(value='颤音化')
 
             with gr.Row():
@@ -103,7 +103,7 @@ class VibratoDemo:
         with gr.Blocks() as self.increase_sin_ui:
             with gr.Row():
                 self.increase_sin_ui_A = gr.Number(value=1, label='A(正弦波振幅)')
-                self.increase_sin_ui_p = gr.Slider(minimum=1, maximum=10, value=1, step=0.1, label='频率升高速率')
+                self.increase_sin_ui_p = gr.Slider(minimum=1, maximum=10, value=4, step=0.1, label='频率升高速率')
             self.increase_sin_ui_btn = gr.Button(value='颤音化')
 
             with gr.Row():

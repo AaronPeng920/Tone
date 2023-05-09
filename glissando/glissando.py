@@ -74,8 +74,8 @@ def glissando_spectrum(y, reference, sr=22050, frame_length=2048, hop_length=512
 
     shift_reference = pitch_shift_fft_steps(f0, n_fft=frame_length, sr=sr)
 
-    # 截断到 -12, 12
-    shift_reference_cliped = np.clip(shift_reference, -12, 12)
+    # 截断到 -6, 6
+    shift_reference_cliped = np.clip(shift_reference, -6, 6)
     # 采样
     shift = shift_sampling(shift_reference_cliped, n)  # 实际的 shift 值
     # 平滑处理

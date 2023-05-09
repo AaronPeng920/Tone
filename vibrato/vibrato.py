@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .utils import frame, spectrum2wav
 from .fluctuation import sine, uniform_sine, gause_sine, increase_f_sine, decrease_f_sine
-from .noise import gause_noise
 import sys
 sys.path.append('..')
 from features.fundfreq import save_fundfreq_figure

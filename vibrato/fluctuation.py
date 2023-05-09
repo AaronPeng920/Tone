@@ -51,10 +51,12 @@ def gause_sine(A, mean, square, n):
     """
     t = np.linspace(0, 2*np.pi, n)
     f = np.random.normal(mean, square, len(t))
+
     # 使用一个长度为 32 的均值滤波器对频率序列进行平滑处理, 从而让频率的变化更加缓慢
-    f_smooth = np.convolve(f, np.ones(32)/32, mode='same')
+    # f_smooth = np.convolve(f, np.ones(32)/32, mode='same')
+
     # 生成正弦波
-    x = A * np.sin(2*np.pi*f_smooth*t)
+    x = A * np.sin(2*np.pi*f*t)
     
     return t, x
 
@@ -68,13 +70,15 @@ def increase_f_sine(A, p, n):
         return: (采样点x值, 采样点y值), shape:(2,n)
     """
     # 生成含有n个采样点的信号
-    x = np.linspace(0, 10, n)
-
+    x = np.linspace(0, 2*np.pi, n)
     # 生成周期变化的信号
-    periods = 5 * np.exp(-(p/10) * x)  # 周期变化的数组
-    frequencies = 2 * np.pi / periods  # 频率根据周期计算
-
+    # periods = 5 * np.exp(-(p/10) * x)  # 周期变化的数组
+    # frequencies = 2 * np.pi / periods  # 频率根据周期计算
+    # y = A * np.sin(frequencies * x)
+    periods = 1 * np.exp(-0.1 * x)  # 周期变化的数组
+    frequencies =  0.1 * p * 2 * np.pi / periods  # 频率根据周期计算
     y = A * np.sin(frequencies * x)
+
     return x, y
 
 # 生成频率逐渐降低的正弦波
@@ -87,16 +91,16 @@ def decrease_f_sine(A, p, n):
         return: (采样点x值, 采样点y值), shape:(2,n)
     """
     # 生成含有n个采样点的信号
-    x = np.linspace(0, 10, n)
+    x = np.linspace(0, 2*np.pi, n)
 
     # 生成频率逐渐降低的正弦波信号
-    frequencies = p * np.exp(-0.1 * x)  # 频率逐渐降低的数组
+    frequencies = 0.5 * p * np.exp(-0.1 * x)  # 频率逐渐降低的数组
     y = A * np.sin(2 * np.pi * frequencies * x)
 
     return x, y
 
 if __name__ == '__main__':
-    _, fluct = decrease_f_sine(1, 1, 100)
+    _, fluct = increase_f_sine(1, 4, 100)
     plt.plot(fluct)
     plt.show()
 
