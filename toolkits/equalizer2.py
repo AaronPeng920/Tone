@@ -9,16 +9,16 @@ import soundfile as sf
 
 # 频段
 FREQ_BAND = {
-    '60': [20, 60],
-    '100': [61, 100],
-    '150': [101, 150],
-    '300': [151, 300],
-    '500': [301, 500],
-    '1k': [501, 1000],
-    '2k': [1001, 2000],
-    '4k': [2001, 4000],
-    '8k': [4001, 8000],
-    '16k': [8001, 16000]
+    '32': [0, 31],
+    '64': [32, 63],
+    '125': [64, 124],
+    '250': [125, 249],
+    '500': [250, 499],
+    '1k': [500, 999],
+    '2k': [1000, 1999],
+    '4k': [2000, 3999],
+    '8k': [4000, 7999],
+    '16k': [8000, 15999]
 }
 
 # 对分贝为元素的频谱图指定的频段进行分贝增益
@@ -42,7 +42,7 @@ def S_db_gain(S, freq_band, gain_value=0):
     return S
 
 # 均衡器函数
-def equalizer(filename, freq_band_60, freq_band_100, freq_band_150, freq_band_300, freq_band_500, 
+def equalizer(filename, freq_band_32, freq_band_64, freq_band_125, freq_band_250, freq_band_500, 
             freq_band_1k, freq_band_2k, freq_band_4k, freq_band_8k, freq_band_16k):
     """参数
         filename: gradio 接收的文件名
@@ -58,10 +58,10 @@ def equalizer(filename, freq_band_60, freq_band_100, freq_band_150, freq_band_30
     audio_S_p = np.angle(audio_S_complex)                           # 原音频相位
 
     freq_bands = {
-        '60': freq_band_60,
-        '100': freq_band_100,
-        '150': freq_band_150,
-        '300': freq_band_300,
+        '32': freq_band_32,
+        '64': freq_band_64,
+        '125': freq_band_125,
+        '250': freq_band_250,
         '500': freq_band_500,
         '1k': freq_band_1k,
         '2k': freq_band_2k,
@@ -95,11 +95,11 @@ class Equalizer:
             self.input_file = gr.File(label='音频文件')
             with gr.Blocks():
                 with gr.Row():
-                    self.slider_60 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='20-60(Hz)')
-                    self.slider_100 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='60-100(Hz)')
-                    self.slider_150 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='100-150(Hz)')
-                    self.slider_300 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='150-300(Hz)')
-                    self.slider_500 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='300-500(Hz)')
+                    self.slider_32 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='0-32(Hz)')
+                    self.slider_64 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='32-64(Hz)')
+                    self.slider_125 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='64-125(Hz)')
+                    self.slider_250 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='125-250(Hz)')
+                    self.slider_500 = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='250-500(Hz)')
                 with gr.Row():
                     self.slider_1k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='500-1k(Hz)')
                     self.slider_2k = gr.Slider(minimum=-12, maximum=12, value=0, step=1, label='1k-2k(Hz)')
@@ -121,7 +121,7 @@ class Equalizer:
                             self.target_audio = gr.Audio(label='生成音频')
             
             self.btn.click(self.func, 
-                            inputs=[self.input_file, self.slider_60, self.slider_100, self.slider_150, self.slider_300, self.slider_500, 
+                            inputs=[self.input_file, self.slider_32, self.slider_64, self.slider_125, self.slider_250, self.slider_500, 
                                     self.slider_1k, self.slider_2k, self.slider_4k, self.slider_8k, self.slider_16k], 
                             outputs=[self.origin_spectrum, self.origin_audio, self.target_spectrum, self.target_audio])
 

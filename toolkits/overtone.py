@@ -52,16 +52,16 @@ def fundfreq_process(fundfreqs):
     return fundfreqs
 
 # 保留基频泛音组合
-def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
+def fundfreq_overtone_group(S_abs, fundfreqs, overtone_group):
     """参数
-        S_db: 分贝作为元素的频谱图, shape:(n_fft//2+1, 帧数量)
+        S_abs: 绝对值作为元素的频谱图, shape:(n_fft//2+1, 帧数量)
         fundfreqs: 基频, shape:(n_fft//2+1, 帧数量)
         overtone_group: list(int), 要保留的基频和泛音级别
         -------------------------------
-        return: 保留指定的基频和泛音后的 db 频谱图
+        return: 保留指定的基频和泛音后的绝对值频谱图
     """
-    fft_total = S_db.shape[0]
-    frame_count = S_db.shape[1]
+    fft_total = S_abs.shape[0]
+    frame_count = S_abs.shape[1]
 
     mask = []    
 
@@ -83,7 +83,7 @@ def fundfreq_overtone_group(S_db, fundfreqs, overtone_group):
     mask = mask.T
     
 
-    res = mask_fliter(S_db, mask, pad_value=-80)
+    res = mask_fliter(S_abs, mask, pad_value=0)
     
     return res
     
@@ -119,15 +119,18 @@ def overtone(filename, l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10,
     if fundfreq_process:
         f0 = fundfreq_process(f0)
 
-    target_spectrum_db = fundfreq_overtone_group(origin_spectrum_db, f0, overtone_group)
+    target_spectrum_abs = fundfreq_overtone_group(np.abs(origin_spectrum), f0, overtone_group)
+    target_spectrum_db = librosa.amplitude_to_db(target_spectrum_abs)
     target_audio = spectrum2wav(target_spectrum_db, origin_spectrum_p)
 
     # 进行幅度谱补丁修正 RMS
     if patch:
         target_spectrum_complex = spectrum(target_audio)        # 目标音频的复数频谱图
         amp_patch = amplitude_patch(target_spectrum_complex, origin_spectrum)  # 补丁
-        res_spectrum_complex = target_spectrum_complex + amp_patch  # 最终的复数元素频谱图
-        res_spectrum_db = librosa.amplitude_to_db(np.abs(res_spectrum_complex))
+        target_spectrum_abs = np.abs(target_spectrum_complex)
+
+        res_spectrum_abs = target_spectrum_abs + amp_patch  # 最终的绝对值元素频谱图
+        res_spectrum_db = librosa.amplitude_to_db(res_spectrum_abs)
         target_audio = spectrum2wav(res_spectrum_db, origin_spectrum_p)
     
     target_spectrum_path = 'gradio_temp/overtone_target_spectrum.jpg'

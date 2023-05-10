@@ -2,7 +2,7 @@ import librosa
 import gradio as gr
 from vibrato.vibrato import vibrato_sine_api, vibrato_uniformsine_api, vibrato_gausesine_api, vibrato_decrease_f_sine_api, vibrato_increase_f_sine_api
 from glissando.glissando import glissando_api
-from toolkits.equalizer import Equalizer
+from toolkits.equalizer2 import Equalizer
 from toolkits.pitch_shifter import PitchShifter
 from toolkits.overtone import Overtone
 
