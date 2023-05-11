@@ -57,14 +57,21 @@ def note_step(note_a, note_b, bins_per_octave=12):
     return res
 
 # 计算音高相对于第一个非 nan 音符的 n_steps
-def pitch_shift_steps(fundfreqs, bins_per_octave=12):
+def pitch_shift_steps(fundfreqs, bins_per_octave=12, midi_or_note='note'):
     """参数
         fundfreqs: 基频列表
         bins_per_octave: 每个音高分为几步
+        midi_or_note: 使用 midi 计算差还是使用 note 计算差
         ------------------------
         return: 相对于第一个非 nan 基频的音高调整 steps
     """
-    f0_notes = [librosa.hz_to_note(i) if not np.isnan(i) else 'nan' for i in fundfreqs] 
+    
+    if midi_or_note == 'note':
+        f0_notes = [librosa.hz_to_note(i) if not np.isnan(i) else 'nan' for i in fundfreqs] 
+    elif midi_or_note == 'midi':
+        f0_notes = [librosa.hz_to_midi(i) if not np.isnan(i) else 'nan' for i in fundfreqs] 
+    else:
+        raise NotImplementedError('unknown type of {}'.format(midi_or_note))
 
     first_note_idx = -1
     shift = []
@@ -84,7 +91,13 @@ def pitch_shift_steps(fundfreqs, bins_per_octave=12):
             if f0_notes[i] == 'nan':
                 shift.append(shift[-1])
             else:
-                shift.append(note_step(f0_notes[i], f0_notes[first_note_idx]))
+                if midi_or_note == 'note':
+                    shift.append(note_step(f0_notes[i], f0_notes[first_note_idx]))
+                elif midi_or_note == 'midi':
+                    shift.append(f0_notes[i] - f0_notes[first_note_idx])
+                else:
+                    raise NotImplementedError('unknown type of {}'.format(midi_or_note))
+
 
     shift = np.array(shift)
     
